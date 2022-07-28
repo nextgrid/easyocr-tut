@@ -72,7 +72,6 @@ class GPT_3:
         return self.completion.create(prompt=prompt, **options)['choices'][0]['text']
 
     def summarize(self, text):
-
         prompt = f'Try to summarize the following text as best you can!\n\n{text}'
 
         return self.prediction(prompt=prompt)
@@ -84,7 +83,7 @@ def read_img(img_path):
     return img
 
 if __name__ == '__main__':
-    secrets = load_dotenv()
+    load_dotenv() # Load secrets
     
     reader = Reader(is_cuda=is_available())
     gpt_3 = GPT_3(os.getenv('OPENAI_API_KEY'))
@@ -97,9 +96,10 @@ if __name__ == '__main__':
     print('Extracted_text')
     print(text)
 
-    plt.imshow(extracted_image)
-    plt.show()
-
     summarization_result = gpt_3.summarize(text)
+
     print('Summarized text:')
     print(summarization_result)
+
+    plt.imshow(extracted_image)
+    plt.show()
