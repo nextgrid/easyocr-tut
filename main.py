@@ -46,5 +46,16 @@ class Reader:
 
         return extracted_text, img
 
+def read_img(img_path):
+    img = cv2.imread(img_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    return img
+
 if __name__ == '__main__':
     reader = Reader(is_cuda=is_available())
+
+    img = read_img('./a.png')
+    
+    plt.imshow(img)
+    plt.show()
