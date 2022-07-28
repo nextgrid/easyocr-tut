@@ -1,8 +1,10 @@
 import os
 import cv2
+import openai
 import easyocr
 import matplotlib.pyplot as plt
 from torch.cuda import is_available
+from dotenv import load_dotenv
 
 class Reader:
     def __init__(self, is_cuda=False):
@@ -46,6 +48,35 @@ class Reader:
 
         return extracted_text, img
 
+class GPT_3:
+    def __init__(self, api_key):
+        openai.api_key = api_key
+
+        self.completion = openai.Completion
+        self.options = {
+            'engine': 'text-davinci-002',
+            'temperature': 0.25,
+            'top_p': 1,
+            'frequency_penalty': 0,
+            'presence_penalty': 0,
+            'max_tokens': 512
+        }
+
+    def __call__(self, prompt, options=None):
+        return self.prediction(prompt, options)
+
+    def prediction(self, prompt, options=None):
+        if not options:
+            options = self.options
+
+        return self.completion.create(prompt=prompt, **options)['choices'][0]['text']
+
+    def summarize(self, text):
+
+        prompt = f'Try to summarize the following text as best you can!\n\n{text}'
+
+        return self.prediction(prompt=prompt)
+
 def read_img(img_path):
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -53,9 +84,22 @@ def read_img(img_path):
     return img
 
 if __name__ == '__main__':
-    reader = Reader(is_cuda=is_available())
-
-    img = read_img('./a.png')
+    secrets = load_dotenv()
     
-    plt.imshow(img)
+    reader = Reader(is_cuda=is_available())
+    gpt_3 = GPT_3(os.getenv('OPENAI_API_KEY'))
+    
+    img = read_img('./example_post.png')
+    text, extracted_image = reader(img)
+    
+    text = ' '.join(text)
+
+    print('Extracted_text')
+    print(text)
+
+    plt.imshow(extracted_image)
     plt.show()
+
+    summarization_result = gpt_3.summarize(text)
+    print('Summarized text:')
+    print(summarization_result)
